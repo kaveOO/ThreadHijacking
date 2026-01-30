@@ -3,10 +3,17 @@
 
 // Should hijack target thread right here :)
 
+CONTEXT getThreadContext(HANDLE hThread) {
+	CONTEXT context;
+	GetThreadContext(hThread, &context);
+	return context;
+}
+
 int main() {
 	HANDLE hThread;
+	CONTEXT context;
 
-	hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, 2540);
+	hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, 22408);
 	if (!hThread) {
 		std::cout << "Failed to open thread handle : " << GetLastError() << std::endl;
 		return 1;
@@ -14,19 +21,23 @@ int main() {
 
 	std::cout << "Successfully opened thread 0x" << hThread << std::endl;
 
-	if (SuspendThread(hThread) == -1) {
-		std::cout << "Failed to suspend thread : " << GetLastError() << std::endl;
-		return 1;
-	}
+	context = getThreadContext(hThread);
 
-	std::cout << "Sucessfully suspended thread" << std::endl;
+	std::cout << context.ContextFlags << std::endl;
 
-	Sleep(3000);
+	//if (SuspendThread(hThread) == -1) {
+	//	std::cout << "Failed to suspend thread : " << GetLastError() << std::endl;
+	//	return 1;
+	//}
 
-	if (ResumeThread(hThread) == -1) {
-		std::cout << "Failed to resume thread : " << GetLastError() << std::endl;
-		return 1;
-	}
-	
-	std::cout << "Sucessfully resumed thread" << std::endl;
+	//std::cout << "Sucessfully suspended thread" << std::endl;
+
+	//Sleep(3000);
+
+	//if (ResumeThread(hThread) == -1) {
+	//	std::cout << "Failed to resume thread : " << GetLastError() << std::endl;
+	//	return 1;
+	//}
+	//
+	//std::cout << "Sucessfully resumed thread" << std::endl;
 }
