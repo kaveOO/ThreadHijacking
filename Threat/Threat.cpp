@@ -58,6 +58,7 @@ bool Threat::Hijack() {
 	}
 
 	HMODULE ntdll = nullptr;
+	uintptr_t start = 0, end = 0, rip = 0;
 
 	for (size_t i = 0; i < (modulesCount / sizeof(HMODULE)); i++) {
 		TCHAR path[MAX_PATH];
@@ -67,20 +68,17 @@ bool Threat::Hijack() {
 			return false;
 		}
 
-		if (_tcsstr(path, L"ntdll.dll") == 0) {
+		if (_tcsstr(path, L"ntdll.dll") != nullptr) {
 			std::cout << "[ DEBUG ] ntdll found!" << std::endl;
+			MODULEINFO moduleInfos;
+			if (!K32GetModuleInformation(hProcess, hModules[i], &moduleInfos, sizeof(moduleInfos))) {
+				std::cerr << "[ ERROR ] K32GetModuleInformation: " << GetLastError() << std::endl;
+				return false;
+			}
+			start = (uintptr_t)moduleInfos.lpBaseOfDll;
+			end = start + moduleInfos.SizeOfImage;
 			break;
 		}
-
-		MODULEINFO moduleInfos;
-		
-		if (!K32GetModuleInformation(hProcess, hModules[i], &moduleInfos, sizeof(moduleInfos))) {
-			std::cerr << "[ ERROR ] K32GetModuleInformation: " << GetLastError() << std::endl;
-			return false;
-		}
-
-		std::cout << moduleInfos.SizeOfImage << std::endl;
-		
 
 		std::wcout << path << std::endl;
 	}
@@ -93,19 +91,35 @@ bool Threat::Hijack() {
 
 		std::cout << "[ DEBUG ] SuspendThread" << std::endl;
 
+
 		if (!GetThreadContext(hThread, &context)) {
 			std::cerr << "[ ERROR ] GetThreadContext: " << GetLastError() << std::endl; 
 			if (ResumeThread(hThread) == (DWORD) - 1) {
 				std::cerr << "[ ERROR ] ResumeThread: " << GetLastError() << std::endl;
 			}
 		}
+
+		rip = context.Rip;
+
+		std::cout << std::hex << start << std::endl;
+		std::cout << std::hex << end << std::endl;
+
+		std::cout << std::hex << rip << std::endl;
+
+		if (rip >= start && rip < end) {
+			std::cout << "[ DEBUG ] Thread is safe to hijack" << std::endl;
+			ResumeThread(hThread);
+			break;
+		} else {
+			std::cout << "[ DEBUG ] Thread not safe to hijack" << std::endl;
+		}
 	
-		Sleep(1000);
-		std::cout << "Resume in 3..." << std::endl;
-		Sleep(1000);
-		std::cout << "Resume in 2..." << std::endl;
-		Sleep(1000);
-		std::cout << "Resume in 1..." << std::endl;
+		//Sleep(1000);
+		//std::cout << "Resume in 3..." << std::endl;
+		//Sleep(1000);
+		//std::cout << "Resume in 2..." << std::endl;
+		//Sleep(1000);
+		//std::cout << "Resume in 1..." << std::endl;
 
 		if (ResumeThread(hThread) == (DWORD) -1) {
 			std::cerr << "[ ERROR ] ResumeThread: " << GetLastError() << std::endl;
@@ -113,6 +127,6 @@ bool Threat::Hijack() {
 		}
 		std::cout << "[ DEBUG ] ResumeThread" << std::endl;
 
-		Sleep(5000);
+		Sleep(250);
 	}
 }
