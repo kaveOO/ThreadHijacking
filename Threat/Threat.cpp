@@ -1,55 +1,118 @@
-#include <iostream>
-#include <Windows.h>
-#include <ios>
+#include "Threat.hpp"
 
-// Should hijack target thread right here :)
-
-CONTEXT GetAndPrintContext(HANDLE hThread) {
-	CONTEXT context = { };
+Threat::Threat(const wchar_t *processName) : Process(processName) {
 	context.ContextFlags = CONTEXT_FULL;
 
-	if (GetThreadContext(hThread, &context)) {
+	HANDLE			hSnapshot;
+	THREADENTRY32	threadEntry = {};
+	BOOL			hResult;
 
+	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (hSnapshot == INVALID_HANDLE_VALUE) {
+		std::cerr << "Failed to snapshot threads: " << GetLastError() << std::endl;
+		return;
 	}
 
-	return context;
+	threadEntry.dwSize = sizeof(THREADENTRY32);
+	hResult = Thread32First(hSnapshot, &threadEntry);
+
+	while (hResult) {
+		if (processId == threadEntry.th32OwnerProcessID) {
+			threadId = threadEntry.th32ThreadID;
+			break;
+		}
+		hResult = Thread32Next(hSnapshot, &threadEntry);
+	}
+
+	CloseHandle(hSnapshot);
+
+	hThread = OpenThread(THREAD_ALL_ACCESS, 0, threadId);
+	if (!hThread) {
+		std::cerr << "[ ERROR ] OpenThread: " << GetLastError() << std::endl;
+		return;
+	}
 }
 
-int main() {
-	HANDLE hThread;
-	CONTEXT context;
+Threat::~Threat() {
+	CloseHandle(hThread);
+}
 
-	hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, 6248);
-	if (!hThread) {
-		std::cout << "Failed to open thread handle : " << GetLastError() << std::endl;
-		return 1;
+void Threat::DebugPrint() const {
+	std::cout << "-------------------------" << std::endl;
+	std::cout << " THIS IS A DEBUG PRINT ! " << std::endl;
+	std::cout << "-------------------------" << std::endl;
+	std::cout << "[ DEBUG ] processId: " << processId << std::endl;
+	std::cout << "[ DEBUG ] threadId: " << threadId << std::endl;
+	std::cout << "[ DEBUG ] context: 0x" << std::hex << &context << std::endl;
+	std::cout << "[ DEBUG ] hThread: 0x" << std::hex << hThread << std::endl;
+}
+
+bool Threat::Hijack() {
+	HMODULE hModules[1024];
+	DWORD modulesCount;
+
+	if (!EnumProcessModules(hProcess, hModules, sizeof(hModules), &modulesCount)) {
+		std::cerr << "[ ERROR ] EnumProcessModules: " << GetLastError() << std::endl;
+		CloseHandle(hProcess);
+		return false;
 	}
 
-	std::cout << "Successfully opened thread 0x" << hThread << std::endl;
+	HMODULE ntdll = nullptr;
 
-	context = GetAndPrintContext(hThread);
+	for (size_t i = 0; i < (modulesCount / sizeof(HMODULE)); i++) {
+		TCHAR path[MAX_PATH];
 
-	std::cout << "0x7ffad8f3cca4" << std::endl;
+		if (!GetModuleFileNameEx(hProcess, hModules[i], path, sizeof(path) / sizeof(TCHAR))) {
+			std::cerr << "[ ERROR ] GetModuleFileNameA: " << GetLastError() << std::endl;
+			return false;
+		}
 
-	#ifdef _WIN64
-		std::cout << "RIP (Instruction Pointer): 0x" << std::hex << context.Rip << std::endl;
-		std::cout << "RSP (Stack Pointer): 0x" << std::hex << context.Rsp << std::endl;
-	#endif
+		if (_tcsstr(path, L"ntdll.dll") == 0) {
+			std::cout << "[ DEBUG ] ntdll found!" << std::endl;
+			break;
+		}
 
+		MODULEINFO moduleInfos;
+		
+		if (!K32GetModuleInformation(hProcess, hModules[i], &moduleInfos, sizeof(moduleInfos))) {
+			std::cerr << "[ ERROR ] K32GetModuleInformation: " << GetLastError() << std::endl;
+			return false;
+		}
 
-	if (SuspendThread(hThread) == -1) {
-		std::cout << "Failed to suspend thread : " << GetLastError() << std::endl;
-		return 1;
+		std::cout << moduleInfos.SizeOfImage << std::endl;
+		
+
+		std::wcout << path << std::endl;
 	}
 
-	std::cout << "Sucessfully suspended thread" << std::endl;
+	while (1) {
+		if (SuspendThread(hThread) == (DWORD) -1) {
+			std::cerr << "[ ERROR ] SuspendThread: " << GetLastError() << std::endl;
+			return false;
+		}
 
-	//Sleep(3000);
+		std::cout << "[ DEBUG ] SuspendThread" << std::endl;
 
-	if (ResumeThread(hThread) == -1) {
-		std::cout << "Failed to resume thread : " << GetLastError() << std::endl;
-		return 1;
-	}
+		if (!GetThreadContext(hThread, &context)) {
+			std::cerr << "[ ERROR ] GetThreadContext: " << GetLastError() << std::endl; 
+			if (ResumeThread(hThread) == (DWORD) - 1) {
+				std::cerr << "[ ERROR ] ResumeThread: " << GetLastError() << std::endl;
+			}
+		}
 	
-	std::cout << "Sucessfully resumed thread" << std::endl;
+		Sleep(1000);
+		std::cout << "Resume in 3..." << std::endl;
+		Sleep(1000);
+		std::cout << "Resume in 2..." << std::endl;
+		Sleep(1000);
+		std::cout << "Resume in 1..." << std::endl;
+
+		if (ResumeThread(hThread) == (DWORD) -1) {
+			std::cerr << "[ ERROR ] ResumeThread: " << GetLastError() << std::endl;
+			return false;
+		}
+		std::cout << "[ DEBUG ] ResumeThread" << std::endl;
+
+		Sleep(5000);
+	}
 }

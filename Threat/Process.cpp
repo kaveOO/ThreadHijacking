@@ -7,7 +7,7 @@ Process::Process(const wchar_t *processName) {
 
 	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hSnapshot == INVALID_HANDLE_VALUE) {
-		std::cerr << "Failed to create snapshot of processes" << std::endl;
+		std::cerr << "Failed to snapshot processes: " << GetLastError() << std::endl;
 		return;
 	}
 
@@ -22,21 +22,19 @@ Process::Process(const wchar_t *processName) {
 		hResult = Process32Next(hSnapshot, &processEntry);
 	}
 
+	CloseHandle(hSnapshot);
+
 	if (processId == 0) {
-		std::wcerr << "Failed to find " << processName << std::endl;
+		std::cerr << "[ ERROR ] Failed to get processId: " << GetLastError() << std::endl;
+		return;
 	}
 
-	CloseHandle(hSnapshot);
+	hProcess = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
+	if (!hProcess) {
+		std::cerr << "[ ERROR ] OpenProcess: " << GetLastError() << std::endl;
+		return;
+	}
 }
 
 Process::~Process() {
-	CloseHandle(hProcess);
-}
-
-DWORD Process::GetProcessId() const {
-	return processId;
-}
-
-HANDLE Process::GetProcessHandle() const {
-	return hProcess;
 }
