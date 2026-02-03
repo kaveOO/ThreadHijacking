@@ -174,7 +174,6 @@ static bool OpenTargetThread(t_HijackData *data) {
 
 static bool Hijack(const wchar_t *processName, t_HijackData *data) {
 	CONTEXT context;
-
 	ZeroMemory(&context, sizeof(context));
 	context.ContextFlags = CONTEXT_FULL;
 
@@ -185,18 +184,7 @@ static bool Hijack(const wchar_t *processName, t_HijackData *data) {
 
 	data->processName = processName;
 
-	if (!OpenTargetProcess(data) || !OpenTargetThread(data)) {
-		return false;
-	}
-
-	if (SuspendThread(data->hThread) == (DWORD)-1) {
-		printf("[ ERROR ] Failed to suspend thread: %lu", GetLastError());
-		return false;
-	}
-
-
-	if (!GetThreadContext(data->hThread, &context)) {
-		printf("[ ERROR ] Failed to get thread context: %lu", GetLastError());
+	if (!OpenTargetProcess(data)) {
 		return false;
 	}
 
@@ -222,6 +210,20 @@ static bool Hijack(const wchar_t *processName, t_HijackData *data) {
 	))
 	{
 		printf("[ ERROR ] Failed to write the hijackBuffer: %lu", GetLastError());
+		return false;
+	}
+
+	if (!OpenTargetThread(data)) {
+		return false;
+	}
+
+	if (SuspendThread(data->hThread) == (DWORD)-1) {
+		printf("[ ERROR ] Failed to suspend thread: %lu", GetLastError());
+		return false;
+	}
+
+	if (!GetThreadContext(data->hThread, &context)) {
+		printf("[ ERROR ] Failed to get thread context: %lu", GetLastError());
 		return false;
 	}
 
