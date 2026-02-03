@@ -2,16 +2,10 @@
 #include <Windows.h>
 
 int main() {
-	for (size_t i = 0;;i++) {
-		//std::cout << i << std::endl;
-		//Sleep(3000);
-		if (i == 10000000000) {
-			std::cout << i << std::endl;
-			Sleep(1000);
+	while (1) {
+		for (int i = 0; i < 1000000; i++) {
+			// User Mode Execution
 		}
-		
-		if (i == 10000000042) {
-			std::cout << "test" << std::endl;
-		}
+		Sleep(2000); // Passing by the Kernel
 	}
 }

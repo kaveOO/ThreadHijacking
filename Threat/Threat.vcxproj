@@ -123,13 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Process.cpp" />
-    <ClCompile Include="Threat.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Process.hpp" />
-    <ClInclude Include="Threat.hpp" />
+    <ClCompile Include="Main.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
