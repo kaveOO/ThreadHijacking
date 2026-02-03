@@ -41,7 +41,6 @@ typedef struct HijackData {
 	HANDLE			hProcess;		// 8
 	HANDLE			hThread;		// 8
 	DWORD			processId;		// 4
-	CONTEXT			context;		// 1232
 } t_HijackData;
 
 static void InitHijackData(t_HijackData *data) {
@@ -53,9 +52,6 @@ static void InitHijackData(t_HijackData *data) {
 	data->processId = 0;
 	data->hProcess = NULL;
 	data->hThread = NULL;
-
-	ZeroMemory(&data->context, sizeof(data->context));
-	data->context.ContextFlags = CONTEXT_FULL;
 }
 
 static void CleanHijackData(t_HijackData *data) {
@@ -177,6 +173,11 @@ static bool OpenTargetThread(t_HijackData *data) {
 }
 
 static bool Hijack(const wchar_t *processName, t_HijackData *data) {
+	CONTEXT context;
+
+	ZeroMemory(&context, sizeof(context));
+	context.ContextFlags = CONTEXT_FULL;
+
 	if (!processName || !data) {
 		printf("[ ERROR ] Enter a valid processName!");
 		return false;
@@ -193,7 +194,8 @@ static bool Hijack(const wchar_t *processName, t_HijackData *data) {
 		return false;
 	}
 
-	if (!GetThreadContext(data->hThread, &data->context)) {
+
+	if (!GetThreadContext(data->hThread, &context)) {
 		printf("[ ERROR ] Failed to get thread context: %lu", GetLastError());
 		return false;
 	}
@@ -223,9 +225,9 @@ static bool Hijack(const wchar_t *processName, t_HijackData *data) {
 		return false;
 	}
 
-	data->context.Rip = (uintptr_t)hijackBuffer;
+	context.Rip = (uintptr_t)hijackBuffer;
 
-	if (!SetThreadContext(data->hThread, &data->context)) {
+	if (!SetThreadContext(data->hThread, &context)) {
 		printf("[ ERROR ] Failed to set the hijacked context: %lu", GetLastError());
 		return false;
 	}
@@ -245,6 +247,7 @@ int main() {
 
 	if (!Hijack(L"Target.exe", &data)) {
 		CleanHijackData(&data);
+		while(1) {}
 		return 1;
 	}
 
