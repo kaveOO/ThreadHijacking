@@ -239,6 +239,8 @@ static bool Hijack(const wchar_t *processName, t_HijackData *data) {
 		return false;
 	}
 
+	CloseHandle(data->hProcess);
+	CloseHandle(data->hThread);
 	return true;
 }
 
