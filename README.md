@@ -12,7 +12,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This program took me around four days to complete; I mainly used ressources from the internet, and the <a href="https://en.wikipedia.org/wiki/Windows_API" target="_blank">Windows API</a>
+This program took me around four days to complete; I mainly used ressources from the internet, and the <a href="https://en.wikipedia.org/wiki/Windows_API" target="_blank">Windows API</a>. The goal of this project is to demonstrate thread hijacking by executing shellcode in the main thread of another process.
 
 // ADD THE VIDEO HERE
 
@@ -28,91 +28,47 @@ This program took me around four days to complete; I mainly used ressources from
 <!-- GETTING STARTED -->
 ## Getting Started
 
-<br>
-
-> [!WARNING]
-> This project requires a Direct Memory Access (DMA) card to operate.
-
-<br>
-
 ### No Compilation Needed
 
 1. Download from Releases
-   ```sh
-   Download CompiledCheat.zip from the Releases tab of the Repository
    ```
-2. Extract the .zip
-   ```sh
-   Extract the CompiledCheat.zip archive
+   Download Target.exe and Threat.exe from the Releases tab of the Repository
+   ```
+2. Run both programs
+   ```
+   Run Target.exe first then Threat.exe, threat will inject the shellcode into Target.exe
    ```
 3. Enjoy !
    ```
-   Start AssaultCube and run AssaultCubeDMA.exe
+   You should see a MessageBox appearing that is attached to the main thread (paused) of Target.exe.
+   If you click OK or close the MessageBox, the Target program will automatically shut down.
    ```
 
 ### Installation & Compilation
 
 1. Clone the repo
-   ```sh
-   git clone https://github.com/1337Corporation/AssaultCubeDMA.git
    ```
-2. Build DMALibrary (Release)
-   ```sh
-   Open DMALibrary.sln change the configuration to Release and build it
+   https://github.com/kaveOO/ThreadHijacking.git
    ```
-3. Build AssaultCubeDMA (Debug)
-   ```sh
-   Open AssaultCubeDMA.sln keep the Debug config and build it.
+2. Build Target.exe (Release | x64)
    ```
-4. Add MemProcFS binaries
-   ```sh
-   Download MemProcFS binaries from Releases tab of the Repo
+   Open Target.sln make sure that Configuration is set to Release and Platform set to x64
+   Click on Build -> Build Solution or Ctrl+Shift+B
    ```
-5. Navigate to x64/Debug directory
-   ```sh
-   cd AssaultCubeDMA\AssaultCubeDMA\x64\Debug
+3. Build Threat.exe (Release | x64)
    ```
-6. Extract all binaries
-   ```sh
-   Extract all binaries at the root of directory (not inside a MemProcFS directory)
+   Open Threat.sln make sure that Configuration is set to Release and Platform set to x64
+   Click on Build -> Build Solution or Ctrl+Shift+B
    ```
-7. Enjoy !
-   ```sh
-   Start AssaultCube and run AssaultCubeDMA.exe
+4. Run both programs
    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ROADMAP -->
-## Roadmap
-
-1. **Reverse Engineering AssaultCube**
-   - Used IDA Pro and other tools to analyze AssaultCube's memory structure and game logic.
-   - Identified player, entity, and game state addresses.
-
-2. **Researching DMA Techniques**
-   - Studied DMA hardware and external memory access methods.
-   - Selected compatible DMA cards and libraries (e.g., DMALibrary, MemProcFS).
-
-3. **Setting Up the DMA Environment**
-   - Integrated DMALibrary for low-level memory access.
-   - Verified communication between DMA card and target system.
-
-4. **Implementing Memory Reading/Writing**
-   - Developed C++ classes to read/write game memory externally.
-   - Ensured safe and reliable access to game data structures.
-
-5. **Building ESP Features**
-   - Coded basic ESP overlays (player positions, boxes, etc.) using ImGui for rendering.
-   - Linked ESP data to real-time memory reads.
-
-6. **Testing and Debugging**
-   - Ran the cheat alongside AssaultCube, iteratively fixing bugs and improving stability.
-   - Used debug builds and logging for troubleshooting.
-
-7. **Packaging and Documentation**
-   - Created build scripts and release instructions.
-   - Documented setup, usage, and technical details in the README.
+   Run Target.exe first then Threat.exe, threat will inject the shellcode into Target.exe
+   ```
+5. Enjoy !
+   ```
+   You should see a MessageBox appearing that is attached to the main thread (paused) of Target.exe.
+   If you click OK or close the MessageBox, the Target program will automatically shut down.
+   ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
