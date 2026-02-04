@@ -28,7 +28,7 @@ This program took me around four days to complete; I mainly used ressources from
 <!-- GETTING STARTED -->
 ## Getting Started
 
-### No Compilation Needed
+### No Compilation Needed (Recommended)
 
 1. Download from Releases
    ```
@@ -82,12 +82,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* [DMALibrary](https://github.com/Metick/DMALibrary)
-* [MemProcFS (this guy is too good...)](https://github.com/ufrisk/MemProcFS)
-* [UnknownCheats](https://www.unknowncheats.me/forum/index.php)
-* [IDA CheatSheet](https://malwareunicorn.org/workshops/idacheatsheet.html)
-* [Brain (mine)](https://en.wikipedia.org/wiki/Brain)
-* [ImGui (UI & Rendering)](https://github.com/ocornut/imgui)
+* [Pavel Yosifovich](https://www.youtube.com/@zodiacon/videos)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
