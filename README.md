@@ -14,8 +14,7 @@
 
 This program took me around four days to complete; I mainly used ressources from the internet, and the <a href="https://en.wikipedia.org/wiki/Windows_API" target="_blank">Windows API</a>. The goal of this project is to demonstrate thread hijacking by executing shellcode in the main thread of another process.
 
-// ADD THE VIDEO HERE
-
+![GifShowcase](https://github.com/user-attachments/assets/078cdf1c-a21a-4473-b58d-54fb252faf78)
 
 ### Built With
 
